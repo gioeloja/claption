@@ -12,3 +12,11 @@ Development Plan:
    - Create a frontend where users can upload images
    - Maybe some functionality that stores a user's captions
        - This will require accounts (auth)
+
+Things to do:
+   -Project initialization (Go)
+   -Upload image endpoint (for now, we are skipping the model configuration stuff, will do this later)
+   -Mock S3, SQS, Lambda (look into how to do this, localstack?)
+      -Upload image API will put image in S3 bucket and send a message in SQS
+      -Make Lambda function to handle SQS message
+   -Make docker image for image processing service
