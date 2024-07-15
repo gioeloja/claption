@@ -13,10 +13,20 @@ Development Plan:
    - Maybe some functionality that stores a user's captions
        - This will require accounts (auth)
 
+
+Captioning flow:
+
+a user uploads an image (frontend sends image to endpoint managed by Amazon API Gateway)
+
+API gateway triggers a lambda function that saves image to S3 bucket
+
+S3 event triggers lambda function that sends image to SQS with image details
+
+SQS message triggers lambda function that processes image with Docker container, this caption is then sent to S3 bucket
+
+
 Things to do:
-   -Project initialization (Go)
-   -Upload image endpoint (for now, we are skipping the model configuration stuff, will do this later)
-   -Mock S3, SQS, Lambda (look into how to do this, localstack?)
-      -Upload image API will put image in S3 bucket and send a message in SQS
-      -Make Lambda function to handle SQS message
-   -Make docker image for image processing service
+
+   -Get docker and localstack setup so we can mock AWS
+      
+      -mock API gateway, S3 bucket, SQS, Lambda
