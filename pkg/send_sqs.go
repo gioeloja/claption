@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	pkg "caption_service/pkg/models"
 	"context"
 	"encoding/json"
 	"log"
@@ -13,6 +14,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 )
 
+// When an image is uploaded to S3, this lambda is triggered. This lambda will
+// get the bucket/key details for the image and send a message to SQS.
 func SendSQSHandler(ctx context.Context, s3Event events.S3Event) error {
 	// Load AWS SDK configuration
 	sdkConfig, err := config.LoadDefaultConfig(ctx)
@@ -37,16 +40,16 @@ func SendSQSHandler(ctx context.Context, s3Event events.S3Event) error {
 			Bucket: &bucket,
 			Key:    &key,
 		})
+
+		// TODO: maybe verify that this is a png using data type?
+
 		if err != nil {
 			log.Printf("error getting head of object %s/%s: %s", bucket, key, err)
 			return err
 		}
 
-		// message model
-		message := map[string]string{
-			"bucket": bucket,
-			"key":    key,
-		}
+		// initialize SQS message
+		message := pkg.NewSQSMessage(bucket, key)
 
 		messageJSON, err := json.Marshal(message)
 		if err != nil {
