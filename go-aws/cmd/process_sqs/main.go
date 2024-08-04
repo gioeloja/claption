@@ -1,7 +1,7 @@
 package main
 
 import (
-	"caption_service/pkg"
+	"caption_service/go-aws/pkg"
 
 	"github.com/aws/aws-lambda-go/lambda"
 )

@@ -1,12 +1,14 @@
 package pkg
 
 import (
+	"bytes"
 	"caption_service/go-aws/pkg/models"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
+	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -53,17 +55,49 @@ func ProcessSQSHandler(ctx context.Context, sqsEvent events.SQSEvent) error {
 		defer s3Resp.Body.Close()
 
 		// Process the data from S3
-		body, err := io.ReadAll(s3Resp.Body)
+		imageData, err := io.ReadAll(s3Resp.Body)
 		if err != nil {
 			return fmt.Errorf("error reading S3 object body: %v", err)
 		}
 
-		fmt.Printf("Object data: %s\n", string(body))
+		fmt.Printf("Object data: %s\n", string(imageData))
 
 		// TODO: pass image into docker with our model
 		// put the caption into a caption S3 bucket with the same key
 
 	}
+
+	return nil
+}
+
+// Send image data to our dockerized python model
+func SendImageToDocker(imageData []byte, dockerURL string) error {
+	req, err := http.NewRequest("POST", dockerURL, bytes.NewReader(imageData))
+	if err != nil {
+		return fmt.Errorf("error creating HTTP request: %v", err)
+	}
+
+	req.Header.Set("Content-Type", "image/png")
+
+	// Send the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("error sending HTTP request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Check the response from Docker
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("unexpected response status: %v", resp.Status)
+	}
+
+	responseBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("error reading response body: %v", err)
+	}
+
+	fmt.Printf("Response from Docker: %s\n", string(responseBody))
 
 	return nil
 }
