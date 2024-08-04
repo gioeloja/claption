@@ -1,7 +1,7 @@
 package pkg
 
 import (
-	pkg "caption_service/pkg/models"
+	"caption_service/go-aws/pkg/models"
 	"context"
 	"encoding/json"
 	"log"
@@ -49,7 +49,10 @@ func SendSQSHandler(ctx context.Context, s3Event events.S3Event) error {
 		}
 
 		// initialize SQS message
-		message := pkg.NewSQSMessage(bucket, key)
+		message := models.SQSMessage{
+			Bucket: bucket,
+			Key:    key,
+		}
 
 		messageJSON, err := json.Marshal(message)
 		if err != nil {

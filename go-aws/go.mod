@@ -1,4 +1,4 @@
-module caption_service
+module caption_service/go-aws
 
 go 1.22.5
 

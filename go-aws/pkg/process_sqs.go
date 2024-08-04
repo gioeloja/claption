@@ -1,7 +1,7 @@
 package pkg
 
 import (
-	pkg "caption_service/pkg/models"
+	"caption_service/go-aws/pkg/models"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -29,7 +29,7 @@ func ProcessSQSHandler(ctx context.Context, sqsEvent events.SQSEvent) error {
 
 	for _, message := range sqsEvent.Records {
 		// unmarshall our json string
-		var sqsMessage pkg.SQSMessage
+		var sqsMessage models.SQSMessage
 		err := json.Unmarshal([]byte(message.Body), &sqsMessage)
 		if err != nil {
 			return fmt.Errorf("error unmarshalling SQS message: %v", err)
