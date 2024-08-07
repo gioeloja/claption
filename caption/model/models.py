@@ -2,12 +2,9 @@ import torch
 import torch.nn as nn
 import torchvision.models as models
 from torchvision.models.resnet import ResNet50_Weights
-import matplotlib.pyplot as plt
 import numpy as np
 import torchvision.transforms as transforms
 from PIL import Image
-import skimage.transform
-import matplotlib.cm as cm
 
 device = torch.device("cpu")
 

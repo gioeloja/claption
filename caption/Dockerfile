@@ -11,4 +11,4 @@ COPY . .
 EXPOSE 80
 
 # Run the Flask application
-CMD [ "python", "./caption.py" ]
+CMD [ "python", "./handler.py" ]
