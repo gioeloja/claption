@@ -3,12 +3,16 @@ package lambdas
 import (
 	"bytes"
 	"caption_service/go-aws/pkg/models"
+	"caption_service/go-aws/pkg/utils"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -53,50 +57,88 @@ func ProcessSQSHandler(ctx context.Context, sqsEvent events.SQSEvent) error {
 
 		defer s3Resp.Body.Close()
 
-		// Process the data from S3
+		// process the data from S3
 		imageData, err := io.ReadAll(s3Resp.Body)
 		if err != nil {
 			return fmt.Errorf("error reading S3 object body: %v", err)
 		}
 
-		fmt.Printf("Object data: %s\n", string(imageData))
+		// send image to our flask endpoint with the model
+		caption, err := SendImageToDocker(imageData)
+		if err != nil {
+			return fmt.Errorf("error when sending image to model endpoint: %v", err)
+		}
+		fmt.Printf("Caption is: %s", caption)
 
-		// TODO: pass image into docker with our model
-		// put the caption into a caption S3 bucket with the same key
-
+		// send job status update to status SQS queue
+		err = utils.SendUpdateStatusMessage(context.Background(), models.CaptionJob{
+			JobID:     sqsMessage.Key,
+			Status:    "Complete",
+			Caption:   &caption,
+			Timestamp: int(time.Now().Unix()),
+		})
+		if err != nil {
+			log.Fatalf("Failed to send status SQS message: %v", err)
+		}
 	}
 
 	return nil
 }
 
 // Send image data to our dockerized python model
-func SendImageToDocker(imageData []byte, dockerURL string) error {
-	req, err := http.NewRequest("POST", dockerURL, bytes.NewReader(imageData))
+func SendImageToDocker(imageData []byte) (string, error) {
+	// buffer to store our multipart form data
+	var b bytes.Buffer
+	w := multipart.NewWriter(&b)
+
+	// create form file field for 'file'
+	fileWriter, err := w.CreateFormFile("file", "image.png")
 	if err != nil {
-		return fmt.Errorf("error creating HTTP request: %v", err)
+		return "", fmt.Errorf("error creating form file field: %v", err)
 	}
 
-	req.Header.Set("Content-Type", "image/png")
+	// write image data to form field
+	_, err = fileWriter.Write(imageData)
+	if err != nil {
+		return "", fmt.Errorf("error writing image data to form field: %v", err)
+	}
 
-	// Send the request
+	w.Close()
+
+	// POST req
+	url := os.Getenv("CAPTION_IMAGE_EC2_ENDPOINT")
+	req, err := http.NewRequest("POST", url, &b)
+	if err != nil {
+		return "", fmt.Errorf("error creating HTTP request: %v", err)
+	}
+
+	// specify multipart
+	req.Header.Set("Content-Type", w.FormDataContentType())
+
+	// send req
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return fmt.Errorf("error sending HTTP request: %v", err)
+		return "", fmt.Errorf("error sending HTTP request: %v", err)
 	}
 	defer resp.Body.Close()
 
-	// Check the response from Docker
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("unexpected response status: %v", resp.Status)
-	}
-
+	// process response
+	var responseJson map[string]string
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("error reading response body: %v", err)
+		return "", fmt.Errorf("error reading response body: %v", err)
 	}
 
-	fmt.Printf("Response from Docker: %s\n", string(responseBody))
+	// unmarshall response back into JSON
+	err = json.Unmarshal(responseBody, &responseJson)
+	if err != nil {
+		return "", fmt.Errorf("error unmarshalling response body: %v", err)
+	}
 
-	return nil
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("unexpected response status: %v, response body: %s", resp.Status, responseBody)
+	}
+
+	return responseJson["message"], nil
 }

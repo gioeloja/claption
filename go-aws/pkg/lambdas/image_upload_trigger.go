@@ -2,10 +2,12 @@ package lambdas
 
 import (
 	"caption_service/go-aws/pkg/models"
+	"caption_service/go-aws/pkg/utils"
 	"context"
 	"encoding/json"
 	"log"
 	"os"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -69,6 +71,17 @@ func SendProcessMessage(ctx context.Context, s3Event events.S3Event) error {
 		if err != nil {
 			log.Printf("error sending message to process image SQS: %s", err)
 			return err
+		}
+
+		// send job update
+		// send caption job SQS msg
+		err = utils.SendUpdateStatusMessage(context.Background(), models.CaptionJob{
+			JobID:     key,
+			Status:    "Image Processing Requested",
+			Timestamp: int(time.Now().Unix()),
+		})
+		if err != nil {
+			log.Fatalf("Failed to send status SQS message: %v", err)
 		}
 
 		log.Printf("successfully sent message to SQS for object %s/%s", bucket, key)

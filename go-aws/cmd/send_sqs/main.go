@@ -7,5 +7,5 @@ import (
 )
 
 func main() {
-	lambda.Start(lambdas.ProcessSQSHandler)
+	lambda.Start(lambdas.SendProcessMessage)
 }
