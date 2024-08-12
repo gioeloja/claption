@@ -25,6 +25,7 @@ import (
 // Next, we pass the image through our docker image with the model, and then
 // upload the caption result to the caption S3 bucket.
 func ProcessSQSHandler(ctx context.Context, sqsEvent events.SQSEvent) error {
+	currStage := "Process Image SQS Trigger"
 	// Load AWS SDK configuration
 	sdkConfig, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
@@ -52,6 +53,7 @@ func ProcessSQSHandler(ctx context.Context, sqsEvent events.SQSEvent) error {
 			Key:    aws.String(sqsMessage.Key),
 		})
 		if err != nil {
+			err = utils.HandleError(sqsMessage.Key, err, currStage, "Getting object from S3")
 			return fmt.Errorf("error getting object from S3: %v", err)
 		}
 
@@ -60,12 +62,14 @@ func ProcessSQSHandler(ctx context.Context, sqsEvent events.SQSEvent) error {
 		// process the data from S3
 		imageData, err := io.ReadAll(s3Resp.Body)
 		if err != nil {
+			err = utils.HandleError(sqsMessage.Key, err, currStage, "reading S3 object body")
 			return fmt.Errorf("error reading S3 object body: %v", err)
 		}
 
 		// send image to our flask endpoint with the model
-		caption, err := SendImageToDocker(imageData)
+		caption, err := SendImageToDocker(imageData, sqsMessage.Key)
 		if err != nil {
+			err = utils.HandleError(sqsMessage.Key, err, currStage, "sending image to model endpoint")
 			return fmt.Errorf("error when sending image to model endpoint: %v", err)
 		}
 		fmt.Printf("Caption is: %s", caption)
@@ -78,6 +82,7 @@ func ProcessSQSHandler(ctx context.Context, sqsEvent events.SQSEvent) error {
 			Timestamp: int(time.Now().Unix()),
 		})
 		if err != nil {
+			err = utils.HandleError(sqsMessage.Key, err, currStage, "Failed to send status SQS message")
 			log.Fatalf("Failed to send status SQS message: %v", err)
 		}
 	}
@@ -86,7 +91,8 @@ func ProcessSQSHandler(ctx context.Context, sqsEvent events.SQSEvent) error {
 }
 
 // Send image data to our dockerized python model
-func SendImageToDocker(imageData []byte) (string, error) {
+func SendImageToDocker(imageData []byte, jobID string) (string, error) {
+	currStage := "Process Image SQS Trigger: sending image to docker endpoint"
 	// buffer to store our multipart form data
 	var b bytes.Buffer
 	w := multipart.NewWriter(&b)
@@ -94,12 +100,14 @@ func SendImageToDocker(imageData []byte) (string, error) {
 	// create form file field for 'file'
 	fileWriter, err := w.CreateFormFile("file", "image.png")
 	if err != nil {
+		err = utils.HandleError(jobID, err, currStage, "creating form file field")
 		return "", fmt.Errorf("error creating form file field: %v", err)
 	}
 
 	// write image data to form field
 	_, err = fileWriter.Write(imageData)
 	if err != nil {
+		err = utils.HandleError(jobID, err, currStage, "writing image data to form field")
 		return "", fmt.Errorf("error writing image data to form field: %v", err)
 	}
 
@@ -109,6 +117,7 @@ func SendImageToDocker(imageData []byte) (string, error) {
 	url := os.Getenv("CAPTION_IMAGE_EC2_ENDPOINT")
 	req, err := http.NewRequest("POST", url, &b)
 	if err != nil {
+		err = utils.HandleError(jobID, err, currStage, "creating HTTP request")
 		return "", fmt.Errorf("error creating HTTP request: %v", err)
 	}
 
@@ -119,6 +128,7 @@ func SendImageToDocker(imageData []byte) (string, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
+		err = utils.HandleError(jobID, err, currStage, "sending HTTP request")
 		return "", fmt.Errorf("error sending HTTP request: %v", err)
 	}
 	defer resp.Body.Close()
@@ -127,12 +137,14 @@ func SendImageToDocker(imageData []byte) (string, error) {
 	var responseJson map[string]string
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
+		err = utils.HandleError(jobID, err, currStage, "reading HTTP request")
 		return "", fmt.Errorf("error reading response body: %v", err)
 	}
 
 	// unmarshall response back into JSON
 	err = json.Unmarshal(responseBody, &responseJson)
 	if err != nil {
+		err = utils.HandleError(jobID, err, currStage, "unmarshalling HTTP response body")
 		return "", fmt.Errorf("error unmarshalling response body: %v", err)
 	}
 

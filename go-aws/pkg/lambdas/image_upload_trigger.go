@@ -19,6 +19,7 @@ import (
 // When an image is uploaded to S3, this lambda is triggered. This lambda will
 // get the bucket/key details for the image and send a message to SQS.
 func SendProcessMessage(ctx context.Context, s3Event events.S3Event) error {
+	currStage := "S3 Trigger"
 	// Load AWS SDK configuration
 	sdkConfig, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
@@ -42,13 +43,13 @@ func SendProcessMessage(ctx context.Context, s3Event events.S3Event) error {
 			Bucket: &bucket,
 			Key:    &key,
 		})
-
-		// TODO: maybe verify that this is a png using data type?
-
 		if err != nil {
-			log.Printf("error getting head of object %s/%s: %s", bucket, key, err)
+			err = utils.HandleError(key, err, currStage, "Getting head of object in S3")
+			log.Printf("error getting head of object in S3: %s", err)
 			return err
 		}
+
+		// TODO: maybe verify that this is a png using data type?
 
 		// initialize SQS message
 		message := models.ProcessMessage{
@@ -58,6 +59,7 @@ func SendProcessMessage(ctx context.Context, s3Event events.S3Event) error {
 
 		messageJSON, err := json.Marshal(message)
 		if err != nil {
+			err = utils.HandleError(key, err, currStage, "Marshalling message body")
 			log.Printf("error marshalling message body: %s", err)
 			return err
 		}
@@ -69,6 +71,7 @@ func SendProcessMessage(ctx context.Context, s3Event events.S3Event) error {
 			MessageGroupId: aws.String("image-processing-group"),
 		})
 		if err != nil {
+			err = utils.HandleError(key, err, currStage, "Sending message to process image SQS")
 			log.Printf("error sending message to process image SQS: %s", err)
 			return err
 		}
@@ -81,6 +84,7 @@ func SendProcessMessage(ctx context.Context, s3Event events.S3Event) error {
 			Timestamp: int(time.Now().Unix()),
 		})
 		if err != nil {
+			err = utils.HandleError(key, err, currStage, "Sending message to status update SQS")
 			log.Fatalf("Failed to send status SQS message: %v", err)
 		}
 

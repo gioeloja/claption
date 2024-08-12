@@ -6,8 +6,8 @@ type CaptionJob struct {
 	JobID string
 	// UserID    string
 	// ImageBase64Encoding string
-	Status       string
-	Caption      *string
-	ErrorMessage *string
-	Timestamp    int
+	Status    string
+	Caption   *string
+	Error     *CaptionError
+	Timestamp int
 }
