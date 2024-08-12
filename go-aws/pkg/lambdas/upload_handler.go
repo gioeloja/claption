@@ -81,6 +81,6 @@ func UploadHandler(request events.APIGatewayProxyRequest) (events.APIGatewayProx
 
 	return events.APIGatewayProxyResponse{
 		StatusCode: 200,
-		Body:       "Image successfully uploaded",
+		Body:       id,
 	}, nil
 }
