@@ -66,9 +66,8 @@ func SendProcessMessage(ctx context.Context, s3Event events.S3Event) error {
 
 		// sending process SQS msg
 		_, err = sqsClient.SendMessage(ctx, &sqs.SendMessageInput{
-			QueueUrl:       &processQueueURL,
-			MessageBody:    aws.String((string(messageJSON))),
-			MessageGroupId: aws.String("image-processing-group"),
+			QueueUrl:    &processQueueURL,
+			MessageBody: aws.String((string(messageJSON))),
 		})
 		if err != nil {
 			err = utils.HandleError(key, err, currStage, "Sending message to process image SQS")
