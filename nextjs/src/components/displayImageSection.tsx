@@ -1,15 +1,16 @@
-import React, { useState } from "react";
-import UploadButton from "./uploadButton";
+import React, { useEffect, useState } from "react";
 import { StaticImageData } from "next/image";
 
 interface DisplaySectionProps {
   title: string;
-  image: string | StaticImageData;
+  image: StaticImageData;
+  resetDisplay: () => void;
 }
 
 const DisplayImageSection: React.FC<DisplaySectionProps> = ({
   title,
   image,
+  resetDisplay,
 }) => {
   const [text, setText] = useState(title);
 
@@ -17,10 +18,17 @@ const DisplayImageSection: React.FC<DisplaySectionProps> = ({
     setText(event.target.value);
   };
 
+  useEffect(() => {
+    setText(title);
+  }, [title]);
+
   return (
     <div className="flex min-w-[300px] flex-col items-center justify-center rounded-lg bg-white p-2 text-xl shadow-lg lg:text-3xl">
       <div className="w-full">
-        <button className="flex items-center rounded p-2 text-gray-500 hover:text-gray-300">
+        <button
+          className="flex items-center rounded p-2 text-gray-500 hover:text-gray-300"
+          onClick={resetDisplay}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -40,11 +48,7 @@ const DisplayImageSection: React.FC<DisplaySectionProps> = ({
       </div>
       <div className="flex flex-col items-center justify-center gap-5 py-10 md:flex-row md:px-20">
         <div className="pt-5 shadow-lg md:mr-10">
-          <img
-            src={typeof image === "string" ? image : image.src}
-            alt={title}
-            className="max-h-64 max-w-64"
-          />
+          <img src={image.src} alt={title} className="max-h-64 max-w-64" />
         </div>
         <div className="flex flex-col items-end gap-2">
           <textarea

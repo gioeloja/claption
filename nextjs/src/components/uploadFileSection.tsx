@@ -7,7 +7,7 @@ function handleComputerClick() {
   console.log("Worked");
 }
 
-const UploadFileSection: React.FC<FileSectionProps> = ({}) => {
+const UploadFileSection: React.FC<FileSectionProps> = () => {
   return (
     <div className="flex min-w-[300px] flex-col items-center justify-center rounded-lg bg-white p-2 py-20 text-xl shadow-lg md:px-40 lg:text-3xl">
       <div className="flex items-center text-center font-bold text-gray-400">

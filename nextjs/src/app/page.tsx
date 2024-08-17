@@ -1,11 +1,35 @@
 "use client";
 import Example from "@/components/example";
-import UploadButton from "@/components/uploadButton";
 import UploadFileSection from "@/components/uploadFileSection";
 import shirt from "@/assets/shirt.jpeg";
 import DisplayImageSection from "@/components/displayImageSection";
+import { useReducer } from "react";
+import { initialState, PageReducer } from "@/reducer/reducer";
+import { StaticImageData } from "next/image";
 
 export default function Home() {
+  const [state, dispatch] = useReducer(PageReducer, initialState);
+
+  const setDisplay = (image: StaticImageData, caption: string) => {
+    dispatch({
+      type: "SET_DISPLAY",
+      payload: {
+        Image: image,
+        Caption: caption,
+      },
+    });
+  };
+
+  const resetDisplay = () => {
+    dispatch({ type: "RESET_DISPLAY" });
+  };
+
+  const examples = [
+    { caption: "example 1", image: shirt },
+    { caption: "example 2", image: shirt },
+    { caption: "example 3", image: shirt },
+  ];
+
   return (
     <main className="min-h-[100vh] overflow-hidden bg-white">
       {/* Header */}
@@ -22,7 +46,15 @@ export default function Home() {
         </div>
         <div className="flex items-center justify-center font-semibold">
           {/* <UploadFileSection /> */}
-          <DisplayImageSection title="test" image={shirt} />
+          {state.Image && state.Caption ? (
+            <DisplayImageSection
+              title={state.Caption}
+              image={state.Image}
+              resetDisplay={resetDisplay}
+            />
+          ) : (
+            <UploadFileSection />
+          )}
         </div>
       </div>
       {/* Examples section */}
@@ -33,15 +65,18 @@ export default function Home() {
           <div className="ml-4 flex-1 border-t border-gray-400"></div>
         </div>
         <div className="mt-3 flex flex-col items-center justify-center gap-10 px-10 md:flex-row md:items-start md:gap-20">
-          <div className="h-[250px] w-[250px] md:h-[200px] md:w-[200px]">
-            <Example title="dsadsa" image={shirt} />
-          </div>
-          <div className="h-[250px] w-[250px] md:h-[200px] md:w-[200px]">
-            <Example title="dsadsa" image={shirt} />
-          </div>
-          <div className="h-[250px] w-[250px] md:h-[200px] md:w-[200px]">
-            <Example title="dsadsa" image={shirt} />
-          </div>
+          {examples.map((example, index) => (
+            <div
+              key={index}
+              className="h-[250px] w-[250px] md:h-[200px] md:w-[200px]"
+            >
+              <Example
+                caption={example.caption}
+                image={example.image}
+                setDisplay={setDisplay}
+              />
+            </div>
+          ))}
         </div>
       </div>
     </main>
