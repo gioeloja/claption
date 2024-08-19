@@ -29,8 +29,6 @@ func UploadHandler(request events.APIGatewayProxyRequest) (events.APIGatewayProx
 		}, nil
 	}
 
-	// TODO: do an image size check and return error if too big
-
 	// decode base64 data
 	fileData, err := base64.StdEncoding.DecodeString(base64Data)
 	if err != nil {
@@ -52,14 +50,16 @@ func UploadHandler(request events.APIGatewayProxyRequest) (events.APIGatewayProx
 	s3Client := s3.New(sess)
 
 	// unique ID for the object
-	id := uuid.New().String() + ".png"
+	// TODO: put file extension here
+	id := uuid.New().String()
 
 	// Put image in S3
 	_, err = s3Client.PutObject(&s3.PutObjectInput{
-		Bucket:      aws.String(bucketName),
-		Key:         aws.String(id),
-		Body:        bytes.NewReader(fileData),
-		ContentType: aws.String("image/png"),
+		Bucket: aws.String(bucketName),
+		Key:    aws.String(id),
+		Body:   bytes.NewReader(fileData),
+		//TODO: put content type
+		//ContentType: aws.String("image/png"),
 	})
 	if err != nil {
 		log.Printf("Failed to upload to S3: %s", err)

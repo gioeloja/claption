@@ -21,6 +21,15 @@ export default function Home() {
     });
   };
 
+  const setError = (error: string) => {
+    dispatch({
+      type: "SET_ERROR",
+      payload: {
+        Error: error
+      },
+    });
+  }
+
   const resetDisplay = () => {
     dispatch({ type: "RESET_DISPLAY" });
   };
@@ -54,7 +63,7 @@ export default function Home() {
               resetDisplay={resetDisplay}
             />
           ) : (
-            <UploadFileSection setDisplay={setDisplay}/>
+            <UploadFileSection setDisplay={setDisplay} error={state.Error} setError={setError}/>
           )}
         </div>
       </div>

@@ -22,7 +22,14 @@ type ResetDisplayAction = {
   type: "RESET_DISPLAY";
 };
 
-export type Action = SetDisplayAction | ResetDisplayAction;
+type SetErrorAction = {
+  type: "SET_ERROR";
+  payload: {
+    Error: string | null
+  }
+}
+
+export type Action = SetDisplayAction | ResetDisplayAction | SetErrorAction;
 
 export function PageReducer(
   state: State = initialState,
@@ -37,6 +44,11 @@ export function PageReducer(
       };
     case "RESET_DISPLAY":
       return initialState;
+    case "SET_ERROR":
+      return {
+        ...initialState,
+        Error: action.payload.Error
+      }
     default:
       return state;
   }

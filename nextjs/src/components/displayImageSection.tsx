@@ -64,7 +64,7 @@ const DisplayImageSection: React.FC<DisplaySectionProps> = ({
             style={{ minHeight: "4rem" }}
           />
           <button
-            className="h-8 w-20 rounded-lg bg-[#A0BBB1] text-sm"
+            className="h-8 w-20 rounded-lg bg-[#A0BBB1] hover:bg-[#5D8375] text-sm"
             onClick={handleCopy}
           >
             Copy
