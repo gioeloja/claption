@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { StaticImageData } from "next/image";
 
 interface DisplaySectionProps {
   title: string;
-  image: StaticImageData;
+  image: string;
   resetDisplay: () => void;
 }
 
@@ -16,6 +15,12 @@ const DisplayImageSection: React.FC<DisplaySectionProps> = ({
 
   const handleTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setText(event.target.value);
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(text).catch((err) => {
+      console.error("Could not copy text: ", err);
+    });
   };
 
   useEffect(() => {
@@ -48,17 +53,20 @@ const DisplayImageSection: React.FC<DisplaySectionProps> = ({
       </div>
       <div className="flex flex-col items-center justify-center gap-5 py-10 md:flex-row md:px-20">
         <div className="pt-5 shadow-lg md:mr-10">
-          <img src={image.src} alt={title} className="max-h-64 max-w-64" />
+          <img src={image} alt={title} className="max-h-64 max-w-64" />
         </div>
         <div className="flex flex-col items-end gap-2">
           <textarea
             value={text}
             onChange={handleTextChange}
             className="resiz-none max-h-6 rounded border border-gray-300 p-2 text-xl text-gray-500"
-            rows={1} // Set initial number of rows
-            style={{ minHeight: "4rem" }} // Ensure a minimum height
+            rows={1}
+            style={{ minHeight: "4rem" }}
           />
-          <button className="h-8 w-20 rounded-lg bg-[#A0BBB1] text-sm">
+          <button
+            className="h-8 w-20 rounded-lg bg-[#A0BBB1] text-sm"
+            onClick={handleCopy}
+          >
             Copy
           </button>
         </div>

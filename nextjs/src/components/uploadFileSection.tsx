@@ -1,13 +1,70 @@
-import React from "react";
+import React, { useRef } from "react";
 import UploadButton from "./uploadButton";
+import { getBase64FromImageFile } from "@/utils/processImage";
 
-interface FileSectionProps {}
-
-function handleComputerClick() {
-  console.log("Worked");
+interface FileSectionProps {
+  setDisplay: (image: string, caption: string) => void;
 }
 
-const UploadFileSection: React.FC<FileSectionProps> = () => {
+const UploadFileSection: React.FC<FileSectionProps> = ({setDisplay}) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleComputerClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // check file size
+      if (file.size > 5 * 1024 * 1024) {
+        // TODO: set error using reducer
+        return;
+      }
+      try {
+        const base64String = await getBase64FromImageFile(file); // data url
+        const base64Data = base64String.split(',')[1]; // just base64 encoding
+
+        const response = await fetch('/api/caption', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ base64encoding: base64Data }),
+        });
+
+        let jobID = ""
+
+        if (response.ok) {
+          const responseBody = await response.json();
+          jobID = responseBody["apiData"]["body"]
+        }
+
+        const statusResponse = await fetch(`/api/job/status/${jobID}`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          }
+        )
+        
+        let caption = ""
+        
+        if (statusResponse.ok) {
+          const responseBody = await statusResponse.json();
+          caption = responseBody["apiData"]["Caption"]
+        }
+
+        setDisplay(base64String, caption)
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  };
+
   return (
     <div className="flex min-w-[300px] flex-col items-center justify-center rounded-lg bg-white p-2 py-20 text-xl shadow-lg md:px-40 lg:text-3xl">
       <div className="flex items-center text-center font-bold text-gray-400">
@@ -50,8 +107,15 @@ const UploadFileSection: React.FC<FileSectionProps> = () => {
         <div className="ml-4 flex-1 border-t border-gray-400"></div>
       </div>
       <div className="pt-5">
-        <UploadButton text="Computer" onClick={handleComputerClick} />
+        <UploadButton text="Device" onClick={handleComputerClick} />
       </div>
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        className="hidden"
+        accept=".png, .jpg, .jpeg, .HEIC"
+      />
     </div>
   );
 };

@@ -1,7 +1,5 @@
-import { StaticImageData } from "next/image";
-
 type State = {
-  Image: StaticImageData | null;
+  Image: string | null;
   Caption: string | null;
   Error: string | null;
 };
@@ -15,7 +13,7 @@ export const initialState: State = {
 type SetDisplayAction = {
   type: "SET_DISPLAY";
   payload: {
-    Image: StaticImageData;
+    Image: string;
     Caption: string;
   };
 };

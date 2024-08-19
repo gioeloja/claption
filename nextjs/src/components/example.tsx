@@ -1,10 +1,9 @@
-import { StaticImageData } from "next/image";
 import React from "react";
 
 interface ExampleProps {
   caption: string;
-  image: StaticImageData;
-  setDisplay: (image: StaticImageData, caption: string) => void;
+  image: string | string;
+  setDisplay: (image: string, caption: string) => void;
 }
 
 const Example: React.FC<ExampleProps> = ({ caption, image, setDisplay }) => {
@@ -16,7 +15,7 @@ const Example: React.FC<ExampleProps> = ({ caption, image, setDisplay }) => {
       className="h-full w-full cursor-pointer pt-5 shadow-lg"
       onClick={handleClick}
     >
-      <img src={image.src} alt={caption} />
+      <img src={image} alt={caption} />
     </div>
   );
 };
