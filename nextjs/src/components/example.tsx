@@ -14,10 +14,15 @@ const Example: React.FC<ExampleProps> = ({ caption, image, setDisplay }) => {
   };
   return (
     <div
-      className="h-full w-full cursor-pointer pt-5 shadow-lg"
+      className="h-full w-full cursor-pointer items-center justify-center rounded-lg shadow-lg"
       onClick={handleClick}
     >
-      <Image src={image} alt={caption} />
+      <Image
+        src={image}
+        alt="description"
+        width={500} // Add width
+        height={300} // Add height
+      />
     </div>
   );
 };

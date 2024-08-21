@@ -95,6 +95,10 @@ IAM policies were made to define permissions for interacting with our different 
 
 ## [Front-end](#front-end)
 
+![File upload](./nextjs/src/assets/claption_file_drag.png)
+
+![Caption display](./nextjs/src/assets/claption_display_example.png)
+
 Our front-end uses a reducer that handles our page state. Our reducer has three actions: `SET_DISPLAY`, `RESET_DISPLAY`, `SET_ERROR`. `SET_DISPLAY` sets an image and caption to be displayed on our page. `RESET_DISPLAY` will display the file upload section. `SET_ERROR` is used to display an error message on the file upload section.
 
 We have two Next.js API routes defined: `/api/caption` and `/api/job/status[jobID]`. Our caption route takes in the user uploaded image and makes a call to our AWS route. After this call is made, our status polling endpoint is called to retrieve the caption/error.

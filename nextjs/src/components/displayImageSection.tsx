@@ -54,7 +54,13 @@ const DisplayImageSection: React.FC<DisplaySectionProps> = ({
       </div>
       <div className="flex flex-col items-center justify-center gap-5 py-10 md:flex-row md:px-20">
         <div className="pt-5 shadow-lg md:mr-10">
-          <Image src={image} alt={title} className="max-h-64 max-w-64" />
+          <Image
+            src={image}
+            alt={title}
+            className="max-h-64 max-w-64"
+            width={500} // Add width
+            height={300} // Add height
+          />
         </div>
         <div className="flex flex-col items-end gap-2">
           <textarea
