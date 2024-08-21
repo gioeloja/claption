@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 
 interface DisplaySectionProps {
   title: string;
@@ -53,7 +54,7 @@ const DisplayImageSection: React.FC<DisplaySectionProps> = ({
       </div>
       <div className="flex flex-col items-center justify-center gap-5 py-10 md:flex-row md:px-20">
         <div className="pt-5 shadow-lg md:mr-10">
-          <img src={image} alt={title} className="max-h-64 max-w-64" />
+          <Image src={image} alt={title} className="max-h-64 max-w-64" />
         </div>
         <div className="flex flex-col items-end gap-2">
           <textarea
@@ -64,7 +65,7 @@ const DisplayImageSection: React.FC<DisplaySectionProps> = ({
             style={{ minHeight: "4rem" }}
           />
           <button
-            className="h-8 w-20 rounded-lg bg-[#A0BBB1] hover:bg-[#5D8375] text-sm"
+            className="h-8 w-20 rounded-lg bg-[#A0BBB1] text-sm hover:bg-[#5D8375]"
             onClick={handleCopy}
           >
             Copy

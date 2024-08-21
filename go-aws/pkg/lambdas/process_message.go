@@ -56,7 +56,7 @@ func ProcessSQSHandler(ctx context.Context, sqsEvent events.SQSEvent) error {
 			err = utils.HandleError(sqsMessage.Key, err, currStage, "Getting object from S3")
 			return fmt.Errorf("error getting object from S3: %v", err)
 		}
-
+		fmt.Print("Finished fetching image")
 		defer s3Resp.Body.Close()
 
 		// process the data from S3
@@ -65,7 +65,7 @@ func ProcessSQSHandler(ctx context.Context, sqsEvent events.SQSEvent) error {
 			err = utils.HandleError(sqsMessage.Key, err, currStage, "reading S3 object body")
 			return fmt.Errorf("error reading S3 object body: %v", err)
 		}
-
+		fmt.Print("Attempting to send image to docker")
 		// send image to our flask endpoint with the model
 		caption, err := SendImageToDocker(imageData, sqsMessage.Key)
 		if err != nil {
@@ -98,6 +98,7 @@ func SendImageToDocker(imageData []byte, jobID string) (string, error) {
 	w := multipart.NewWriter(&b)
 
 	// create form file field for 'file'
+	fmt.Print("Making form file")
 	fileWriter, err := w.CreateFormFile("file", "image.png")
 	if err != nil {
 		err = utils.HandleError(jobID, err, currStage, "creating form file field")
@@ -112,7 +113,7 @@ func SendImageToDocker(imageData []byte, jobID string) (string, error) {
 	}
 
 	w.Close()
-
+	fmt.Println("Attempting post request")
 	// POST req
 	url := os.Getenv("CAPTION_IMAGE_EC2_ENDPOINT")
 	req, err := http.NewRequest("POST", url, &b)
@@ -120,7 +121,7 @@ func SendImageToDocker(imageData []byte, jobID string) (string, error) {
 		err = utils.HandleError(jobID, err, currStage, "creating HTTP request")
 		return "", fmt.Errorf("error creating HTTP request: %v", err)
 	}
-
+	fmt.Println("Finished post request")
 	// specify multipart
 	req.Header.Set("Content-Type", w.FormDataContentType())
 
@@ -132,7 +133,7 @@ func SendImageToDocker(imageData []byte, jobID string) (string, error) {
 		return "", fmt.Errorf("error sending HTTP request: %v", err)
 	}
 	defer resp.Body.Close()
-
+	fmt.Println("Attempting processing response")
 	// process response
 	var responseJson map[string]string
 	responseBody, err := io.ReadAll(resp.Body)

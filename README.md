@@ -1,10 +1,10 @@
-# Clothing Image Caption Service
+# CLAPTION - Clothing Image Caption Service
 
 This is a clothing captioning service for people to generate titles for their eBay/Poshmark listings. Given a cover photo for the listing, relevant features will be extracted and returned as a caption.
 
 ## Table of Contents
 
-- [Clothing Image Caption Service](#clothing-image-caption-service)
+- [CLAPTION - Clothing Image Caption Service](#claption---clothing-image-caption-service)
   - [Table of Contents](#table-of-contents)
   - [Overview](#overview)
   - [Technologies](#technologies)
@@ -23,6 +23,7 @@ This is a clothing captioning service for people to generate titles for their eB
       - [Lambda request handler](#lambda-request-handler)
     - [Error Handling](#error-handling)
     - [IAM Roles/Policies](#iam-rolespolicies)
+  - [Front-end](#front-end)
 
 ## [Overview](#overview)
 
@@ -30,7 +31,7 @@ The user sends an image of the clothing item. This image will be passed through 
 
 ## [Technologies](#technologies)
 
-For the backend, a serverless microservices architecture is employed using AWS and Go AWS SDK. This includes S3, SQS, DynamoDB, Lambda, and ECS. I used PyTorch for the model, Docker to containerize it, and Flask to interact with this image. The frontend is built with Next.js and Tailwind CSS.
+For the backend, a serverless microservices architecture is employed using AWS and Go AWS SDK. This includes S3, SQS, DynamoDB, Lambda, and ECS. I used PyTorch for the model, Docker to containerize it, and Flask to interact with this image. The frontend is built with Next.js, TypeScript, and Tailwind CSS.
 
 ## [System Design](#system-design)
 
@@ -91,3 +92,10 @@ Our job status SQS queue is also used by our services whenever errors occur. In 
 ### IAM Roles/Policies
 
 IAM policies were made to define permissions for interacting with our different services (S3, SQS, DynamoDB). A role is made for each Lambda that gets assigned the appropriate policies.
+
+## [Front-end](#front-end)
+
+Our front-end uses a reducer that handles our page state. Our reducer has three actions: `SET_DISPLAY`, `RESET_DISPLAY`, `SET_ERROR`. `SET_DISPLAY` sets an image and caption to be displayed on our page. `RESET_DISPLAY` will display the file upload section. `SET_ERROR` is used to display an error message on the file upload section.
+
+We have two Next.js API routes defined: `/api/caption` and `/api/job/status[jobID]`. Our caption route takes in the user uploaded image and makes a call to our AWS route. After this call is made, our status polling endpoint is called to retrieve the caption/error.
+

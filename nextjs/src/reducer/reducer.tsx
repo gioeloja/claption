@@ -25,9 +25,9 @@ type ResetDisplayAction = {
 type SetErrorAction = {
   type: "SET_ERROR";
   payload: {
-    Error: string | null
-  }
-}
+    Error: string | null;
+  };
+};
 
 export type Action = SetDisplayAction | ResetDisplayAction | SetErrorAction;
 
@@ -47,8 +47,8 @@ export function PageReducer(
     case "SET_ERROR":
       return {
         ...initialState,
-        Error: action.payload.Error
-      }
+        Error: action.payload.Error,
+      };
     default:
       return state;
   }

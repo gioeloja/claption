@@ -4,14 +4,20 @@ import { getBase64FromImageFile } from "@/utils/processImage";
 import { ClipLoader } from "react-spinners";
 
 interface FileSectionProps {
+  // eslint-disable-next-line no-unused-vars
   setDisplay: (image: string, caption: string) => void;
   error: string | null;
+  // eslint-disable-next-line no-unused-vars
   setError: (error: string) => void;
 }
 
-const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/heic'];
+const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp", "image/heic"];
 
-const UploadFileSection: React.FC<FileSectionProps> = ({ setDisplay, error, setError }) => {
+const UploadFileSection: React.FC<FileSectionProps> = ({
+  setDisplay,
+  error,
+  setError,
+}) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
 
@@ -42,13 +48,13 @@ const UploadFileSection: React.FC<FileSectionProps> = ({ setDisplay, error, setE
 
     try {
       const base64String = await getBase64FromImageFile(file); // data URL
-      const base64Data = base64String.split(',')[1]; // just base64 encoding
+      const base64Data = base64String.split(",")[1]; // just base64 encoding
 
       console.log("Calling caption api");
-      const response = await fetch('/api/caption', {
-        method: 'POST',
+      const response = await fetch("/api/caption", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ base64encoding: base64Data }),
       });
@@ -61,9 +67,9 @@ const UploadFileSection: React.FC<FileSectionProps> = ({ setDisplay, error, setE
       }
 
       const statusResponse = await fetch(`/api/job/status/${jobID}`, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
@@ -81,7 +87,6 @@ const UploadFileSection: React.FC<FileSectionProps> = ({ setDisplay, error, setE
       } else {
         setError("Something went wrong - try another image.");
       }
-
     } catch (error) {
       setError("Something went wrong - try another image.");
       console.error(error);
@@ -104,19 +109,21 @@ const UploadFileSection: React.FC<FileSectionProps> = ({ setDisplay, error, setE
 
   return (
     <div
-      className="flex min-w-[300px] flex-col items-center justify-center rounded-lg bg-white p-2 pt-20 pb-10 text-xl shadow-lg md:px-40 lg:text-3xl"
+      className="flex min-w-[300px] flex-col items-center justify-center rounded-lg bg-white p-2 pb-10 pt-20 text-xl shadow-lg md:px-40 lg:text-3xl"
       onDrop={handleDrop}
       onDragOver={handleDragOver}
     >
-      <div className="flex items-center justify-center h-48 w-full max-w-md">
+      <div className="flex h-48 w-full max-w-md items-center justify-center">
         {loading ? (
-          <div className="flex flex-col items-center justify-center h-full w-full gap-6 px-8">
+          <div className="flex h-full w-full flex-col items-center justify-center gap-6 px-8">
             <ClipLoader color="#3498db" />
-            <div className="text-center text-gray-400 text-base max-w-60 md:max-w-80">Generating caption - do not exit page.</div>
+            <div className="max-w-60 text-center text-base text-gray-400 md:max-w-80">
+              Generating caption - do not exit page.
+            </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center w-full h-full">
-            <div className="flex items-center text-center font-bold text-gray-400 mb-4">
+          <div className="flex h-full w-full flex-col items-center justify-center">
+            <div className="mb-4 flex items-center text-center font-bold text-gray-400">
               <svg
                 width="24"
                 height="24"
@@ -147,20 +154,24 @@ const UploadFileSection: React.FC<FileSectionProps> = ({ setDisplay, error, setE
                   ></path>
                 </g>
               </svg>
-              <div className="md:block hidden text-center">Drag your photo here!</div>
-              <div className="md:hidden block text-center">Select image here!</div>
+              <div className="hidden text-center md:block">
+                Drag your photo here!
+              </div>
+              <div className="block text-center md:hidden">
+                Select image here!
+              </div>
             </div>
 
-            <div className="flex w-full items-center text-xl font-semibold text-gray-400 mb-4">
+            <div className="mb-4 flex w-full items-center text-xl font-semibold text-gray-400">
               <div className="mr-4 flex-1 border-t border-gray-400 text-center"></div>
-                <div className="md:block hidden text-center">or upload from</div>
-                <div className="md:hidden block text-center">upload from</div>
+              <div className="hidden text-center md:block">or upload from</div>
+              <div className="block text-center md:hidden">upload from</div>
               <div className="ml-4 flex-1 border-t border-gray-400"></div>
             </div>
             <div className="pt-5">
               <UploadButton text="Device" onClick={handleComputerClick} />
             </div>
-            <div className="text-red-500 text-sm py-5 text-center max-w-60 md:max-w-80">
+            <div className="max-w-60 py-5 text-center text-sm text-red-500 md:max-w-80">
               {error ? error : ""}
             </div>
           </div>
